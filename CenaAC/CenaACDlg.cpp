@@ -227,6 +227,7 @@ DWORD _stdcall Process(LPVOID pParam){
 	p->m_floder.GetWindowTextW(dir); 
 	p->m_uname.GetWindowTextW(x);
 	p->m_prob.GetWindowTextW(pl);
+	if (pl[pl.GetLength() - 1] == ';') pl.Delete(pl.GetLength() - 1); //Issue #1
 	if (dir[dir.GetLength() - 1] != '\\') dir += '\\';
 	dir += x;
 	AddLog(p->m_log, CString("\r\n[生成日志]\r\n\t保存到：") + dir + "\r\n");
