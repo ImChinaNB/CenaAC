@@ -5,3 +5,6 @@
 的话，你可以直接使用这个软件来AC通过"忽略末尾空格和多余空行"模式
 
 计分的题目。
+
+
+下载地址：https://github.com/hanghang0702/CenaAC/releases
