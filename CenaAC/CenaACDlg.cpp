@@ -64,7 +64,7 @@ CCenaACDlg::CCenaACDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void CCenaACDlg::DoDataExchange(CDataExchange* pDX)
+inline void CCenaACDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_SAVEAS, m_floder);
@@ -98,6 +98,8 @@ BEGIN_MESSAGE_MAP(CCenaACDlg, CDialogEx)
 	ON_EN_CHANGE(IDC_SAVEAS, &CCenaACDlg::OnEnChangeMfceditbrowse1)
 	ON_EN_CHANGE(IDC_SAVEAS, &CCenaACDlg::OnEnChangeSaveas)
 	ON_WM_TIMER()
+	ON_EN_CHANGE(IDC_LOG2, &CCenaACDlg::OnEnChangeLog2)
+	ON_EN_UPDATE(IDC_LOG2, &CCenaACDlg::OnUpdateLog2)
 END_MESSAGE_MAP()
 
 
@@ -143,6 +145,7 @@ BOOL CCenaACDlg::OnInitDialog()
 	m_in.SetWindowTextW(CString("in"));
 	m_out.SetWindowTextW(CString("out"));
 	gen = false;
+	SetTimer(2, 5, nullptr);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -332,9 +335,33 @@ void CCenaACDlg::OnEnChangeSaveas()
 void CCenaACDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: Add your message handler code here and/or call default
-	if (nIDEvent == 1) {
-		
-		KillTimer(1);
+	if (nIDEvent == 2) {
+		//CEdit * pEdit = &m_log;
+		m_log.SetSel(-1);
 	}
 	CDialogEx::OnTimer(nIDEvent);
+}
+
+
+void CCenaACDlg::OnEnChangeLog2()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+	m_log.SetSel(-1); //MOVE POINTER TO THE LAST
+}
+
+
+void CCenaACDlg::OnUpdateLog2()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function to send the EM_SETEVENTMASK message to the control
+	// with the ENM_UPDATE flag ORed into the lParam mask.
+
+	// TODO:  Add your control notification handler code here
+	m_log.SetSel(-1);
 }

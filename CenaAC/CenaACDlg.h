@@ -19,9 +19,9 @@ public:
 #endif
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
+		virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
-
+		
 // 实现
 protected:
 	HICON m_hIcon;
@@ -171,10 +171,14 @@ CEdit m_prob;
 CButton m_chk;
 CEdit m_log;
 CButton m_b;
-afx_msg void OnTimer(UINT_PTR nIDEvent);
-CButton m_sub;
+public:
+	afx_msg virtual void OnTimer(UINT_PTR nIDEvent);
+public:
+	CButton m_sub;
 CEdit m_in;
 //CButton m_out;
 CEdit m_uname;
 CEdit m_out;
+afx_msg void OnEnChangeLog2();
+afx_msg void OnUpdateLog2();
 };
