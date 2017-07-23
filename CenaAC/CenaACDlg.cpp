@@ -68,25 +68,16 @@ inline void CCenaACDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_SAVEAS, m_floder);
-	//  DDX_Control(pDX, IDC_USERNAME, m_uname);
-	//  DDX_Control(pDX, IDC_LOG, m_log);
-	//  DDX_Text(pDX, IDC_LOG, m_log);
-	//  DDX_Text(pDX, IDC_USERNAME, m_uname);
-	//  DDX_Control(pDX, IDC_LOG, m_log);
-	//  DDX_Control(pDX, IDC_USERNAME, m_uname);
 	DDX_Control(pDX, IDC_LOG2, m_log);
-	//  DDX_Control(pDX, IDC_USERNAME, m_uname);
-	//  DDX_Control(pDX, IDC_LOG2, m_prob);
-	//  DDX_Control(pDX, IDC_PROb, m_prov);
 	DDX_Control(pDX, IDC_PROb, m_prob);
 	DDX_Control(pDX, IDC_CHECK1, m_chk);
 	DDX_Control(pDX, IDC_LOG2, m_log);
 	DDX_Control(pDX, IDOK, m_b);
 	DDX_Control(pDX, IDC_CHECK3, m_sub);
 	DDX_Control(pDX, IDC_USERNAME3, m_in);
-	//  DDX_Control(pDX, IDCANCEL, m_out);
 	DDX_Control(pDX, IDC_USERNAME2, m_uname);
 	DDX_Control(pDX, IDC_USERNAME, m_out);
+	DDX_Control(pDX, IDC_PROGRESS1, m_progess);
 }
 
 BEGIN_MESSAGE_MAP(CCenaACDlg, CDialogEx)
@@ -145,6 +136,7 @@ BOOL CCenaACDlg::OnInitDialog()
 	m_in.SetWindowTextW(CString("in"));
 	m_out.SetWindowTextW(CString("out"));
 	gen = false;
+	InitStatusBar();
 	SetTimer(2, 5, nullptr);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -221,7 +213,11 @@ BOOL WStringToString(const std::wstring &wstr, std::string &str)
 
 	return TRUE;
 }
-
+void ExecCmd(CCenaACDlg* dialog, const char * cmd) {
+	WCHAR cdir[10005];
+	::GetCurrentDirectory(10000, cdir);
+	ShellExecute(dialog->m_hWnd, CString("open"), CString("cmd.exe"), CString("/c ") + cmd, CString(cdir), SW_HIDE);
+}
 DWORD _stdcall Process(LPVOID pParam){
 	CCenaACDlg* p = (CCenaACDlg*)pParam;
 	p->m_b.SetWindowTextW(CString("执行中..."));
@@ -231,19 +227,15 @@ DWORD _stdcall Process(LPVOID pParam){
 	p->m_uname.GetWindowTextW(x);
 	p->m_prob.GetWindowTextW(pl);
 	if (pl[pl.GetLength() - 1] == ';') pl.Delete(pl.GetLength() - 1); //Issue #1
+	p->m_progess.SetPos(0);
 	if (dir[dir.GetLength() - 1] != '\\') dir += '\\';
 	dir += x;
 	AddLog(p->m_log, CString("\r\n[生成日志]\r\n\t保存到：") + dir + "\r\n");
-	Sleep(500);
+	Sleep(300);
 	AddLog(p->m_log, CString("\t题目列表：") + pl + "\r\n");
-	Sleep(700);
+	Sleep(300);
 	AddLog(p->m_log, CString("\t正在解析题目列表"));
-	for (int i = 1; i <= 3; i++) {
-		Sleep(500);
-		AddLog(p->m_log, CString("."));
-	}
-	AddLog(p->m_log, CString("解析成功！\r\n"));
-	Sleep(700);
+	Sleep(300); AddLog(p->m_log, CString(".\r\n"));
 	CString plist[500], cur = ""; int cnt = 0;
 	pl += ";";
 	for (int i = 0; i < pl.GetLength(); i++) {
@@ -253,9 +245,11 @@ DWORD _stdcall Process(LPVOID pParam){
 		}
 		else cur += pl[i];
 	}
+	p->m_progess.SetRange(0, cnt + 1);
+	p->m_progess.SetPos(1);
 	AddLog(p->m_log, CString("\t正在创建目录：") + dir);
-	for (int i = 1; i <= 3; i++) {
-		Sleep(500);
+	for (int i = 1; i <= 1; i++) {
+		Sleep(300);
 		AddLog(p->m_log, CString("."));
 	}
 	CString TT = (CString("mkdir \"") + dir + CString("\""));
@@ -265,12 +259,12 @@ DWORD _stdcall Process(LPVOID pParam){
 	CString inf, ouf;
 	p->m_in.GetWindowTextW(inf);
 	p->m_out.GetWindowTextW(ouf);
-	system((cmd.c_str()));
+	ExecCmd(p, (cmd.c_str()));
 	AddLog(p->m_log, CString("成功！\r\n"));
 	for (int i = 1; i <= cnt; i++) {
 		AddLog(p->m_log, CString("\t正在处理题目[") + plist[i] + CString("]"));
-		for (int j = 1; j <= 3; j++) {
-			Sleep(500);
+		for (int j = 1; j <= 1; j++) {
+			Sleep(300);
 			AddLog(p->m_log, CString("."));
 		}
 		CString tmp = "const",fpath="";
@@ -282,7 +276,7 @@ DWORD _stdcall Process(LPVOID pParam){
 			string f;
 			WStringToString(wstring(tdir), f);
 			f = "mkdir \"" + f+"\"";
-			system(f.c_str());
+			ExecCmd(p, f.c_str());
 		}
 		CString code = tmp + p->m_pascode;
 		CStdioFile fl;
@@ -290,6 +284,7 @@ DWORD _stdcall Process(LPVOID pParam){
 		fl.WriteString(code);
 		fl.Close();
 		AddLog(p->m_log, CString("成功！\r\n"));
+		p->m_progess.SetPos(p->m_progess.GetPos() + 1);
 	}
 	AddLog(p->m_log, CString("生成完毕！\r\n"));
 	p->m_b.SetWindowTextW(CString("生成！"));
@@ -304,6 +299,7 @@ void CCenaACDlg::OnBnClickedOk()
 		return;
 	}
 	gen = true;
+	m_bar.SetPaneText(1, CString("正在生成..."));
 	proc = CreateThread(NULL, 0, ::Process, this, 0, NULL);
 }
 
@@ -352,6 +348,32 @@ void CCenaACDlg::OnEnChangeLog2()
 
 	// TODO:  Add your control notification handler code here
 	m_log.SetSel(-1); //MOVE POINTER TO THE LAST
+}
+
+void CCenaACDlg::InitStatusBar()
+{
+	//Make changes with m_bar
+	UINT poss[4];
+	for (int i = 0; i < 4; i++) poss[i] = 1001 + i;
+	m_bar.Create(this);
+	m_bar.SetIndicators(poss, sizeof(poss) / sizeof(UINT));
+	RECT WinRect; GetWindowRect(&WinRect);
+	CRect Rc;
+	Rc = CRect(WinRect);
+	int EVERYWIDTH = Rc.Width() / 4;
+	for (int i = 0; i < 2; i++) m_bar.SetPaneInfo(i, poss[i], 0, EVERYWIDTH);
+	m_bar.SetPaneInfo(2, poss[2], 0, EVERYWIDTH - 50);
+	m_bar.SetPaneInfo(3, poss[3], 0, EVERYWIDTH);
+	m_bar.SetPaneText(0, CString("当前状态："));
+	m_bar.SetPaneText(1, CString("空闲"));
+	m_bar.SetPaneText(2, CString("当前进度："));
+	RepositionBars(AFX_IDW_CONTROLBAR_FIRST, AFX_IDW_CONTROLBAR_LAST, 0);
+	m_bar.GetItemRect(3, &WinRect);
+	m_progess.SetParent(&m_bar);
+	m_progess.MoveWindow(&WinRect);
+	m_progess.ShowWindow(SW_SHOW);
+	m_progess.SetRange(0, 100);
+	m_progess.SetPos(0);
 }
 
 

@@ -5,6 +5,7 @@
 #pragma once
 #include "afxeditbrowsectrl.h"
 #include "afxwin.h"
+#include "afxcmn.h"
 
 // CCenaACDlg ¶Ô»°¿ò
 class CCenaACDlg : public CDialogEx
@@ -165,20 +166,21 @@ BEGIN
 END.
 )tst";
 
-//CEdit m_prob;
-//CEdit m_prov;
-CEdit m_prob;
-CButton m_chk;
-CEdit m_log;
-CButton m_b;
-public:
-	afx_msg virtual void OnTimer(UINT_PTR nIDEvent);
-public:
-	CButton m_sub;
-CEdit m_in;
-//CButton m_out;
-CEdit m_uname;
-CEdit m_out;
-afx_msg void OnEnChangeLog2();
-afx_msg void OnUpdateLog2();
+	CEdit m_prob;
+	CButton m_chk;
+	CEdit m_log;
+	CButton m_b;
+	public:
+		afx_msg virtual void OnTimer(UINT_PTR nIDEvent);
+	public:
+		CButton m_sub;
+	CEdit m_in;
+	//CButton m_out;
+	CEdit m_uname;
+	CEdit m_out;
+	CStatusBar m_bar;
+	afx_msg void OnEnChangeLog2();
+	void InitStatusBar();
+	afx_msg void OnUpdateLog2();
+	CProgressCtrl m_progess;
 };
