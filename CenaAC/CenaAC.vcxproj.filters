@@ -60,6 +60,9 @@
     <Image Include="res\icon1.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\CenaAC (2).ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CenaAC1.rc">

@@ -61,7 +61,7 @@ CCenaACDlg::CCenaACDlg(CWnd* pParent /*=NULL*/)
 	, m_log()
 	, m_uname()
 {
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_hIcon = AfxGetApp()->LoadIcon(IDI_ICON1);
 }
 
 inline void CCenaACDlg::DoDataExchange(CDataExchange* pDX)
@@ -226,7 +226,21 @@ DWORD _stdcall Process(LPVOID pParam){
 	p->m_floder.GetWindowTextW(dir); 
 	p->m_uname.GetWindowTextW(x);
 	p->m_prob.GetWindowTextW(pl);
-	if (pl[pl.GetLength() - 1] == ';') pl.Delete(pl.GetLength() - 1); //Issue #1
+	if (pl == "" || pl == ";") {
+		MessageBox(0, CString("题目列表不能为空！"), CString("错误"), MB_ICONERROR);
+		p->m_b.SetWindowTextW(CString("生成！"));
+		p->Setup();
+		p->gen = false;
+		return 1;
+	}
+	while (pl.GetLength()!=0 && pl[pl.GetLength() - 1] == ';') pl.Delete(pl.GetLength() - 1); //Issue #1
+	if (pl == "" || pl == ";") {
+		MessageBox(0, CString("题目列表不能为空！"), CString("错误"), MB_ICONERROR);
+		p->m_b.SetWindowTextW(CString("生成！"));
+		p->Setup();
+		p->gen = false;
+		return 1;
+	}
 	p->m_progess.SetPos(0);
 	if (dir[dir.GetLength() - 1] != '\\') dir += '\\';
 	dir += x;
@@ -236,15 +250,31 @@ DWORD _stdcall Process(LPVOID pParam){
 	Sleep(300);
 	AddLog(p->m_log, CString("\t正在解析题目列表"));
 	Sleep(300); AddLog(p->m_log, CString(".\r\n"));
-	CString plist[500], cur = ""; int cnt = 0;
+	CString cur = ""; std::vector<CString> plist;
 	pl += ";";
 	for (int i = 0; i < pl.GetLength(); i++) {
 		if (pl[i] == ';') {
-			plist[++cnt] = cur;
+			plist.push_back(cur);
 			cur = "";
 		}
 		else cur += pl[i];
 	}
+	if (plist.empty()) {
+		MessageBox(0, CString("题目列表不能为空！"), CString("错误"), MB_ICONERROR);
+		p->Setup();
+		p->m_b.SetWindowTextW(CString("生成！"));
+		p->m_bar.SetPaneText(1, CString("空闲"));
+		p->gen = false;
+		return 1;
+	}
+	std::sort(plist.begin(), plist.end());
+	vector<CString> news; news.push_back(plist[0]);
+	for (int i = 0; i < plist.size(); i++)
+		if (*(news.end() - 1) != plist[i]) news.push_back(plist[i]);
+	int cnt = news.size();
+	plist = news;
+	char buf[50];
+	_itoa_s(cnt, buf, 10);
 	p->m_progess.SetRange(0, cnt + 1);
 	p->m_progess.SetPos(1);
 	AddLog(p->m_log, CString("\t正在创建目录：") + dir);
@@ -260,8 +290,9 @@ DWORD _stdcall Process(LPVOID pParam){
 	p->m_in.GetWindowTextW(inf);
 	p->m_out.GetWindowTextW(ouf);
 	ExecCmd(p, (cmd.c_str()));
+	ofstream fout;
 	AddLog(p->m_log, CString("成功！\r\n"));
-	for (int i = 1; i <= cnt; i++) {
+	for (int i = 0; i < cnt; i++) {
 		AddLog(p->m_log, CString("\t正在处理题目[") + plist[i] + CString("]"));
 		for (int j = 1; j <= 1; j++) {
 			Sleep(300);
@@ -278,18 +309,27 @@ DWORD _stdcall Process(LPVOID pParam){
 			f = "mkdir \"" + f+"\"";
 			ExecCmd(p, f.c_str());
 		}
-		CString code = tmp + p->m_pascode;
-		CStdioFile fl;
-		fl.Open(fpath, CFile::typeText | CFile::modeCreate | CFile::modeWrite);
-		fl.WriteString(code);
-		fl.Close();
+		wstring wcode = (tmp + p->m_pascode).GetBuffer(0);
+		string code;
+		WStringToString(wcode, code);
+		fout.open(fpath, ios::out | ios::trunc);
+
+		fout << code;
+		fout.flush();
+		fout.close();
+
 		AddLog(p->m_log, CString("成功！\r\n"));
 		p->m_progess.SetPos(p->m_progess.GetPos() + 1);
 	}
+
 	AddLog(p->m_log, CString("生成完毕！\r\n"));
 	p->m_b.SetWindowTextW(CString("生成！"));
+	p->Setup();
 	p->gen = false;
 	return 0;
+}
+void CCenaACDlg::Setup() {
+	SetTimer(3, 5, NULL);
 }
 void CCenaACDlg::OnBnClickedOk()
 {
@@ -334,6 +374,10 @@ void CCenaACDlg::OnTimer(UINT_PTR nIDEvent)
 	if (nIDEvent == 2) {
 		//CEdit * pEdit = &m_log;
 		m_log.SetSel(-1);
+	}
+	if (nIDEvent == 3) {
+		m_bar.SetPaneText(1, CString("空闲"));
+		KillTimer(3);
 	}
 	CDialogEx::OnTimer(nIDEvent);
 }

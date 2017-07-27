@@ -216,6 +216,7 @@
     <None Include="res\CenaAC.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\CenaAC (2).ico" />
     <Image Include="res\CenaAC.ico" />
     <Image Include="res\icon1.ico" />
   </ItemGroup>

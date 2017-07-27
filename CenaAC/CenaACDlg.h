@@ -39,6 +39,7 @@ public:
 	afx_msg void OnEnChangeMfceditbrowse1();
 	CMFCEditBrowseCtrl m_floder;
 	afx_msg void OnEnChangeSaveas();
+	void Setup();
 //	CEdit m_uname;
 	void Process();
 	HANDLE proc;

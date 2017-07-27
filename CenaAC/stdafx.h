@@ -39,6 +39,8 @@
 #include "tlhelp32.h"
 #include <string>
 #include <fstream>
+#include <algorithm>
+#include <vector>
 using namespace std;
 
 
